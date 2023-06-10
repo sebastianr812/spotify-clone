@@ -9,6 +9,7 @@ export default async function Home() {
 
   const songs = await getSongs();
 
+
   return (
     <div className="w-full h-full overflow-hidden rounded-lg bg-neutral-900 overlow-y-auto">
       <Header>
