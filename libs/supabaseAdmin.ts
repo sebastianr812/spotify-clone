@@ -141,7 +141,7 @@ const manageSubscriptionStatusChange = async (subscriptionId: string, customerId
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['default_payment_method'] });
 
-    const supscriptionData: Database['public']['Tables']['subscriptions']['Insert'] = {
+    const subscriptionData: Database['public']['Tables']['subscriptions']['Insert'] = {
         id: subscription.id,
         user_id: uuid,
         metadata: subscription.metadata,
@@ -151,5 +151,37 @@ const manageSubscriptionStatusChange = async (subscriptionId: string, customerId
         // @ts-ignore
         quantity: subscription.quantity,
         cancel_at_period_end: subscription.cancel_at_period_end,
+        cancel_at: subscription.cancel_at ? toDateTime(subscription.cancel_at).toISOString() : null,
+        canceled_at: subscription.canceled_at ? toDateTime(subscription.canceled_at).toISOString() : null,
+        current_period_end: toDateTime(subscription.current_period_end).toISOString(),
+        current_period_start: toDateTime(subscription.current_period_start).toISOString(),
+        created: toDateTime(subscription.created).toISOString(),
+        ended_at: subscription.ended_at ? toDateTime(subscription.ended_at).toISOString() : null,
+        trial_start: subscription.trial_start ? toDateTime(subscription.trial_start).toISOString() : null,
+        trial_end: subscription.trial_end ? toDateTime(subscription.trial_end).toISOString() : null
     }
+
+    const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .upsert([subscriptionData])
+
+    if (error) {
+        throw error;
+    }
+
+    console.log(`inserted / updated subscrition [${subscription.id}] for ${uuid}`);
+
+    if (createAction && subscription.default_payment_method && uuid) {
+        await copyBillingDetailsToCustomer(
+            uuid,
+            subscription.default_payment_method as Stripe.PaymentMethod
+        );
+    }
+}
+
+export {
+    upsertPriceRecord,
+    upsertProductRecord,
+    createOrRetrieveCustomer,
+    manageSubscriptionStatusChange
 }
