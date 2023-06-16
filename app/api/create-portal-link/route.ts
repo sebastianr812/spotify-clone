@@ -28,7 +28,7 @@ export async function POST() {
 
         const { url } = await stripe.billingPortal.sessions.create({
             customer,
-            return_url: `${getUrl}/account`
+            return_url: `${getUrl()}/account`
         });
         return NextResponse.json({ url });
     } catch (error: any) {
@@ -38,5 +38,3 @@ export async function POST() {
 }
 
 
-// NEXT TIME WE WORK ON THIS !
-// WE NEED TO USE THE STRPE CLI TO RUN STRIPE LOGIN, GET THE NEW STRIPE WEBHOOK SECRET IN ORDER FOR THE APP TO WORK!
