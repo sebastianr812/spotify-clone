@@ -30,6 +30,7 @@ export async function POST(request: Request) {
 
     try {
         if (!sig || !webhookSecret) {
+
             return;
         }
 
